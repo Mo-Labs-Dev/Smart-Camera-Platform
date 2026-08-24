@@ -1,31 +1,77 @@
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
- LayoutDashboard,
- Monitor,
  Bell,
- Folder,
  Camera,
+ Folder,
+ LayoutDashboard,
  Map,
- Users,
- Settings,
+ Monitor,
  Server,
+ Settings,
  ShieldCheck,
+ Users,
 } from "lucide-react";
 const navigation = [
- { name: "Dashboard", icon: LayoutDashboard },
- { name: "Cameras", icon: Monitor },
- { name: "Events", icon: Bell },
- { name: "Recordings", icon: Folder },
- { name: "Snapshots", icon: Camera },
- { name: "Map", icon: Map },
+ {
+   name: "Dashboard",
+   icon: LayoutDashboard,
+   href: "/",
+ },
+ {
+   name: "Cameras",
+   icon: Monitor,
+   href: "/cameras",
+ },
+ {
+   name: "Events",
+   icon: Bell,
+   href: "/events",
+ },
+ {
+   name: "Recordings",
+   icon: Folder,
+   href: "/recordings",
+ },
+ {
+   name: "Snapshots",
+   icon: Camera,
+   href: "/snapshots",
+ },
+ {
+   name: "Map",
+   icon: Map,
+   href: "/map",
+ },
 ];
 const administration = [
- { name: "Users", icon: Users },
- { name: "System", icon: Server },
- { name: "Settings", icon: Settings },
+ {
+   name: "Users",
+   icon: Users,
+   href: "/users",
+ },
+ {
+   name: "System",
+   icon: Server,
+   href: "/system",
+ },
+ {
+   name: "Settings",
+   icon: Settings,
+   href: "/settings",
+ },
 ];
 export default function Sidebar() {
+ const pathname = usePathname();
+ function isActive(href: string) {
+   if (href === "/") {
+     return pathname === "/";
+   }
+   return pathname.startsWith(href);
+ }
  return (
-<aside className="fixed left-0 top-0 flex h-screen w-64 flex-col border-r border-slate-200 bg-white">
+<aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-slate-200 bg-white">
 <div className="flex h-24 items-center gap-3 px-6">
 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-white">
 <ShieldCheck size={25} />
@@ -41,20 +87,22 @@ export default function Sidebar() {
 </div>
 <nav className="flex-1 px-4">
 <div className="space-y-1">
-         {navigation.map((item, index) => {
+         {navigation.map((item) => {
            const Icon = item.icon;
+           const active = isActive(item.href);
            return (
-<button
+<Link
                key={item.name}
+               href={item.href}
                className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition ${
-                 index === 0
+                 active
                    ? "bg-blue-50 text-blue-600"
                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                }`}
 >
 <Icon size={19} />
                {item.name}
-</button>
+</Link>
            );
          })}
 </div>
@@ -62,14 +110,20 @@ export default function Sidebar() {
 <div className="space-y-1">
          {administration.map((item) => {
            const Icon = item.icon;
+           const active = isActive(item.href);
            return (
-<button
+<Link
                key={item.name}
-               className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
+               href={item.href}
+               className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition ${
+                 active
+                   ? "bg-blue-50 text-blue-600"
+                   : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+               }`}
 >
 <Icon size={19} />
                {item.name}
-</button>
+</Link>
            );
          })}
 </div>
