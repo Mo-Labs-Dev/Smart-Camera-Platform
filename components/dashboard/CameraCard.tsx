@@ -23,13 +23,6 @@ type CameraCardProps = {
  status?: "online" | "offline";
  streamUrl?: string;
 };
-type RecordingStatusResponse = {
- ok: boolean;
- recording?: boolean;
- recordingId?: number | null;
- startedAt?: string | null;
- message?: string;
-};
 export default function CameraCard({
  id = 1,
  name,
@@ -72,9 +65,6 @@ export default function CameraCard({
  const isOnline =
    status === "online" &&
    Boolean(streamUrl);
- /*
-  * Live stream.
-  */
  useEffect(() => {
    const video =
      videoRef.current;
@@ -88,15 +78,15 @@ export default function CameraCard({
    }
    video.crossOrigin =
      "anonymous";
-   video.muted = true;
-   setMuted(true);
+   video.muted =
+     muted;
    setVideoReady(false);
    if (hlsRef.current) {
      hlsRef.current.destroy();
      hlsRef.current = null;
    }
    /*
-    * Native HLS.
+    * Safari / native HLS
     */
    if (
      video.canPlayType(
@@ -104,31 +94,31 @@ export default function CameraCard({
      )
    ) {
      video.src = streamUrl;
-     const ready = () => {
+     const handleReady = () => {
        setVideoReady(true);
        video.play().catch(() => {
-         // Browser autoplay policy.
+         // Autoplay can be blocked.
        });
      };
-     const error = () => {
+     const handleError = () => {
        setVideoReady(false);
      };
      video.addEventListener(
        "loadedmetadata",
-       ready
+       handleReady
      );
      video.addEventListener(
        "error",
-       error
+       handleError
      );
      return () => {
        video.removeEventListener(
          "loadedmetadata",
-         ready
+         handleReady
        );
        video.removeEventListener(
          "error",
-         error
+         handleError
        );
        video.removeAttribute(
          "src"
@@ -137,25 +127,39 @@ export default function CameraCard({
      };
    }
    /*
-    * HLS.js.
+    * Chrome / Edge / Firefox
     */
    if (Hls.isSupported()) {
-     const hls = new Hls({
-       lowLatencyMode: true,
-       liveSyncDurationCount: 3,
-       liveMaxLatencyDurationCount: 6,
-       enableWorker: true,
-     });
-     hlsRef.current = hls;
-     hls.loadSource(streamUrl);
-     hls.attachMedia(video);
+     const hls =
+       new Hls({
+         lowLatencyMode:
+           true,
+         liveSyncDurationCount:
+           3,
+         liveMaxLatencyDurationCount:
+           6,
+         enableWorker:
+           true,
+       });
+     hlsRef.current =
+       hls;
+     hls.loadSource(
+       streamUrl
+     );
+     hls.attachMedia(
+       video
+     );
      hls.on(
        Hls.Events.MANIFEST_PARSED,
        () => {
-         setVideoReady(true);
-         video.play().catch(() => {
-           // Safe to ignore.
-         });
+         setVideoReady(
+           true
+         );
+         video
+           .play()
+           .catch(() => {
+             // Safe to ignore.
+           });
        }
      );
      hls.on(
@@ -170,128 +174,71 @@ export default function CameraCard({
          }
          if (
            data.type ===
-           Hls.ErrorTypes.NETWORK_ERROR
+           Hls.ErrorTypes
+             .NETWORK_ERROR
          ) {
            hls.startLoad();
            return;
          }
          if (
            data.type ===
-           Hls.ErrorTypes.MEDIA_ERROR
+           Hls.ErrorTypes
+             .MEDIA_ERROR
          ) {
            hls.recoverMediaError();
            return;
          }
-         setVideoReady(false);
+         setVideoReady(
+           false
+         );
        }
      );
      return () => {
        hls.destroy();
        if (
-         hlsRef.current === hls
+         hlsRef.current ===
+         hls
        ) {
          hlsRef.current =
            null;
        }
      };
    }
-   setVideoReady(false);
    console.error(
-     "HLS is not supported."
+     "HLS is not supported in this browser."
    );
+   setVideoReady(false);
  }, [
    streamUrl,
    status,
    refreshToken,
+   muted,
  ]);
- /*
-  * Restore recording state when page loads.
-  */
  useEffect(() => {
-   let cancelled = false;
-   async function loadRecordingStatus() {
-     try {
-       const response =
-         await fetch(
-           `/api/cameras/${id}/recording/status`,
-           {
-             cache: "no-store",
-           }
-         );
-       const contentType =
-         response.headers.get(
-           "content-type"
-         ) ?? "";
-       if (
-         !contentType.includes(
-           "application/json"
-         )
-       ) {
-         return;
-       }
-       const result =
-         (await response.json()) as RecordingStatusResponse;
-       if (
-         cancelled ||
-         !response.ok ||
-         !result.ok
-       ) {
-         return;
-       }
-       if (
-         result.recording &&
-         result.startedAt
-       ) {
-         const startedAt =
-           new Date(
-             result.startedAt
-           ).getTime();
-         const elapsed =
-           Math.max(
-             0,
-             Math.floor(
-               (Date.now() -
-                 startedAt) /
-                 1000
-             )
-           );
-         setIsRecording(true);
-         startRecordingTimer(
-           elapsed
-         );
-       } else {
-         setIsRecording(false);
-         stopRecordingTimer();
-         setRecordingSeconds(0);
-       }
-     } catch (error) {
-       console.error(
-         "Could not load recording status:",
-         error
+   return () => {
+     if (
+       recordingTimerRef.current
+     ) {
+       clearInterval(
+         recordingTimerRef.current
        );
      }
-   }
-   loadRecordingStatus();
-   return () => {
-     cancelled = true;
-   };
- }, [id]);
- useEffect(() => {
-   return () => {
-     stopRecordingTimer();
    };
  }, []);
- function startRecordingTimer(
-   initialSeconds = 0
- ) {
-   setRecordingSeconds(
-     initialSeconds
-   );
-   stopRecordingTimer();
+ function startRecordingTimer() {
+   setRecordingSeconds(0);
+   if (
+     recordingTimerRef.current
+   ) {
+     clearInterval(
+       recordingTimerRef.current
+     );
+   }
    recordingTimerRef.current =
      setInterval(() => {
        setRecordingSeconds(
-         (value) => value + 1
+         (value) =>
+           value + 1
        );
      }, 1000);
  }
@@ -309,31 +256,23 @@ export default function CameraCard({
  function formatRecordingTime(
    seconds: number
  ) {
-   const hours =
-     Math.floor(
-       seconds / 3600
-     );
    const minutes =
      Math.floor(
-       (seconds % 3600) /
-         60
+       seconds / 60
      );
    const remaining =
      seconds % 60;
-   if (hours > 0) {
-     return `${String(
-       hours
-     ).padStart(2, "0")}:${String(
-       minutes
-     ).padStart(2, "0")}:${String(
-       remaining
-     ).padStart(2, "0")}`;
-   }
    return `${String(
      minutes
-   ).padStart(2, "0")}:${String(
+   ).padStart(
+     2,
+     "0"
+   )}:${String(
      remaining
-   ).padStart(2, "0")}`;
+   ).padStart(
+     2,
+     "0"
+   )}`;
  }
  function handleRefresh() {
    setVideoReady(false);
@@ -348,18 +287,13 @@ export default function CameraCard({
    if (!video) {
      return;
    }
-   const next =
-     !video.muted;
+   const nextMuted =
+     !muted;
    video.muted =
-     next;
-   setMuted(next);
-   if (!next) {
-     video
-       .play()
-       .catch(() => {
-         // Browser may require interaction.
-       });
-   }
+     nextMuted;
+   setMuted(
+     nextMuted
+   );
  }
  async function handleFullscreen() {
    if (
@@ -401,7 +335,9 @@ export default function CameraCard({
      );
      return;
    }
-   setSnapshotSaving(true);
+   setSnapshotSaving(
+     true
+   );
    try {
      const canvas =
        document.createElement(
@@ -457,8 +393,10 @@ export default function CameraCard({
        await fetch(
          "/api/snapshots",
          {
-           method: "POST",
-           body: formData,
+           method:
+             "POST",
+           body:
+             formData,
          }
        );
      const result =
@@ -492,28 +430,18 @@ export default function CameraCard({
    ) {
      return;
    }
-   setRecordingLoading(true);
+   setRecordingLoading(
+     true
+   );
    try {
      const response =
        await fetch(
          `/api/cameras/${id}/recording/start`,
          {
-           method: "POST",
+           method:
+             "POST",
          }
        );
-     const contentType =
-       response.headers.get(
-         "content-type"
-       ) ?? "";
-     if (
-       !contentType.includes(
-         "application/json"
-       )
-     ) {
-       throw new Error(
-         `Recording API returned HTTP ${response.status}`
-       );
-     }
      const result =
        await response.json();
      if (!response.ok) {
@@ -522,7 +450,9 @@ export default function CameraCard({
            "Failed to start recording"
        );
      }
-     setIsRecording(true);
+     setIsRecording(
+       true
+     );
      startRecordingTimer();
    } catch (error) {
      console.error(
@@ -547,28 +477,18 @@ export default function CameraCard({
    ) {
      return;
    }
-   setRecordingLoading(true);
+   setRecordingLoading(
+     true
+   );
    try {
      const response =
        await fetch(
          `/api/cameras/${id}/recording/stop`,
          {
-           method: "POST",
+           method:
+             "POST",
          }
        );
-     const contentType =
-       response.headers.get(
-         "content-type"
-       ) ?? "";
-     if (
-       !contentType.includes(
-         "application/json"
-       )
-     ) {
-       throw new Error(
-         `Recording API returned HTTP ${response.status}`
-       );
-     }
      const result =
        await response.json();
      if (!response.ok) {
@@ -577,9 +497,10 @@ export default function CameraCard({
            "Failed to stop recording"
        );
      }
-     setIsRecording(false);
+     setIsRecording(
+       false
+     );
      stopRecordingTimer();
-     setRecordingSeconds(0);
    } catch (error) {
      console.error(
        "Stop recording error:",
@@ -604,7 +525,14 @@ export default function CameraCard({
    }
  }
  return (
-<div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+<div
+     className={`overflow-hidden rounded-2xl border bg-white transition-all duration-300 ${
+       isOnline
+         ? "border-emerald-300 shadow-[0_0_0_1px_rgba(16,185,129,0.08),0_0_22px_rgba(16,185,129,0.16)]"
+         : "border-red-300 shadow-[0_0_0_1px_rgba(239,68,68,0.08),0_0_22px_rgba(239,68,68,0.14)]"
+     }`}
+>
+     {/* Header */}
 <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
 <div>
 <h3 className="font-semibold text-slate-900">
@@ -615,15 +543,27 @@ export default function CameraCard({
 </p>
 </div>
 <div className="flex items-center gap-3">
-<div className="flex items-center gap-2">
+<div
+           className={`flex items-center gap-2 rounded-full px-2.5 py-1 ${
+             isOnline
+               ? "bg-emerald-50"
+               : "bg-red-50"
+           }`}
+>
 <span
-             className={`h-2 w-2 rounded-full ${
+             className={`h-2.5 w-2.5 rounded-full ${
                isOnline
-                 ? "bg-emerald-500"
-                 : "bg-red-500"
+                 ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"
+                 : "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.75)]"
              }`}
            />
-<span className="text-xs text-slate-500">
+<span
+             className={`text-xs font-medium ${
+               isOnline
+                 ? "text-emerald-700"
+                 : "text-red-700"
+             }`}
+>
              {isOnline
                ? "Online"
                : "Offline"}
@@ -632,7 +572,7 @@ export default function CameraCard({
 <button
            type="button"
            title="More"
-           className="rounded-lg p-2 text-slate-400 hover:bg-slate-100"
+           className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100"
 >
 <MoreVertical
              size={18}
@@ -640,26 +580,37 @@ export default function CameraCard({
 </button>
 </div>
 </div>
+     {/* Video */}
 <div
-       ref={containerRef}
+       ref={
+         containerRef
+       }
        className="relative aspect-video overflow-hidden bg-black"
 >
        {isOnline ? (
 <>
 <video
-             ref={videoRef}
+             ref={
+               videoRef
+             }
              crossOrigin="anonymous"
              autoPlay
-             muted={muted}
+             muted={
+               muted
+             }
              playsInline
-             controls={false}
+             controls={
+               false
+             }
              className="h-full w-full object-contain"
            />
            {!videoReady && (
 <div className="absolute inset-0 flex items-center justify-center bg-slate-100">
 <div className="text-center">
 <RefreshCw
-                   size={28}
+                   size={
+                     28
+                   }
                    className="mx-auto animate-spin text-slate-400"
                  />
 <p className="mt-3 text-sm text-slate-500">
@@ -683,11 +634,17 @@ export default function CameraCard({
        ) : (
 <div className="flex h-full items-center justify-center bg-slate-100">
 <div className="text-center">
+<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
 <VideoOff
-               size={40}
-               strokeWidth={1.5}
-               className="mx-auto text-slate-400"
-             />
+                 size={
+                   34
+                 }
+                 strokeWidth={
+                   1.5
+                 }
+                 className="text-red-400"
+               />
+</div>
 <p className="mt-3 font-medium text-slate-700">
                No stream
 </p>
@@ -698,6 +655,7 @@ export default function CameraCard({
 </div>
        )}
 </div>
+     {/* Controls */}
 <div className="flex items-center justify-between border-t border-slate-100 bg-white px-4 py-3">
 <div className="flex items-center gap-2">
 <button
@@ -737,7 +695,9 @@ export default function CameraCard({
            {isRecording ? (
 <>
 <Square
-                 size={14}
+                 size={
+                   14
+                 }
                  fill="currentColor"
                />
                {recordingLoading
@@ -760,7 +720,9 @@ export default function CameraCard({
            onClick={
              handleMuteToggle
            }
-           disabled={!isOnline}
+           disabled={
+             !isOnline
+           }
            title={
              muted
                ? "Unmute"
@@ -770,11 +732,15 @@ export default function CameraCard({
 >
            {muted ? (
 <VolumeX
-               size={18}
+               size={
+                 18
+               }
              />
            ) : (
 <Volume2
-               size={18}
+               size={
+                 18
+               }
              />
            )}
 </button>
@@ -783,9 +749,11 @@ export default function CameraCard({
            onClick={
              handleRefresh
            }
-           disabled={!isOnline}
+           disabled={
+             !isOnline
+           }
            title="Reconnect stream"
-           className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+           className="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 disabled:opacity-40"
 >
 <RefreshCw
              size={18}
@@ -801,7 +769,7 @@ export default function CameraCard({
              !videoReady
            }
            title="Fullscreen"
-           className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+           className="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 disabled:opacity-40"
 >
 <Maximize2
              size={18}
@@ -810,7 +778,7 @@ export default function CameraCard({
 <button
            type="button"
            title="Camera settings"
-           className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"
+           className="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100"
 >
 <Settings
              size={18}

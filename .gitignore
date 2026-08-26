@@ -43,3 +43,25 @@ infrastructure/mediamtx/mediamtx.yml
 recordings/
 
 /lib/generated/prisma
+
+node_modules/
+.next/
+.env
+.env.local
+.env.*.local
+# dependencies
+node_modules/
+# Next.js
+.next/
+out/
+# environment / secrets
+.env
+.env.local
+.env.*.local
+# Prisma generated files
+generated/prisma/
+# Camera data
+snapshots/
+recordings/
+# logs
+*.log
