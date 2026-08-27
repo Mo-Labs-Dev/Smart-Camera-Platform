@@ -6,6 +6,7 @@ import {
 } from "react";
 import Hls from "hls.js";
 import {
+ ArrowLeft,
  Camera,
  Maximize2,
  MoreVertical,
@@ -22,6 +23,16 @@ type CameraCardProps = {
  location: string;
  status?: "online" | "offline";
  streamUrl?: string;
+ /*
+  * normal   = dashboard/card view
+  * operator = large CCTV single-camera view
+  */
+ mode?: "normal" | "operator";
+ /*
+  * Used in operator mode to return
+  * to the 4-camera multi view.
+  */
+ onBack?: () => void;
 };
 export default function CameraCard({
  id = 1,
@@ -29,6 +40,8 @@ export default function CameraCard({
  location,
  status = "offline",
  streamUrl,
+ mode = "normal",
+ onBack,
 }: CameraCardProps) {
  const videoRef =
    useRef<HTMLVideoElement>(null);
@@ -40,12 +53,18 @@ export default function CameraCard({
    useRef<ReturnType<
      typeof setInterval
 > | null>(null);
- const [refreshToken, setRefreshToken] =
-   useState(0);
- const [videoReady, setVideoReady] =
-   useState(false);
- const [muted, setMuted] =
-   useState(true);
+ const [
+   refreshToken,
+   setRefreshToken,
+ ] = useState(0);
+ const [
+   videoReady,
+   setVideoReady,
+ ] = useState(false);
+ const [
+   muted,
+   setMuted,
+ ] = useState(true);
  const [
    snapshotSaving,
    setSnapshotSaving,
@@ -62,9 +81,14 @@ export default function CameraCard({
    recordingSeconds,
    setRecordingSeconds,
  ] = useState(0);
+ const isOperator =
+   mode === "operator";
  const isOnline =
    status === "online" &&
    Boolean(streamUrl);
+ /*
+  * HLS VIDEO
+  */
  useEffect(() => {
    const video =
      videoRef.current;
@@ -83,7 +107,8 @@ export default function CameraCard({
    setVideoReady(false);
    if (hlsRef.current) {
      hlsRef.current.destroy();
-     hlsRef.current = null;
+     hlsRef.current =
+       null;
    }
    /*
     * Safari / native HLS
@@ -93,16 +118,23 @@ export default function CameraCard({
        "application/vnd.apple.mpegurl"
      )
    ) {
-     video.src = streamUrl;
-     const handleReady = () => {
-       setVideoReady(true);
-       video.play().catch(() => {
-         // Autoplay can be blocked.
-       });
-     };
-     const handleError = () => {
-       setVideoReady(false);
-     };
+     video.src =
+       streamUrl;
+     const handleReady =
+       () => {
+         setVideoReady(
+           true
+         );
+         video
+           .play()
+           .catch(() => {});
+       };
+     const handleError =
+       () => {
+         setVideoReady(
+           false
+         );
+       };
      video.addEventListener(
        "loadedmetadata",
        handleReady
@@ -129,7 +161,9 @@ export default function CameraCard({
    /*
     * Chrome / Edge / Firefox
     */
-   if (Hls.isSupported()) {
+   if (
+     Hls.isSupported()
+   ) {
      const hls =
        new Hls({
          lowLatencyMode:
@@ -150,26 +184,30 @@ export default function CameraCard({
        video
      );
      hls.on(
-       Hls.Events.MANIFEST_PARSED,
+       Hls.Events
+         .MANIFEST_PARSED,
        () => {
          setVideoReady(
            true
          );
          video
            .play()
-           .catch(() => {
-             // Safe to ignore.
-           });
+           .catch(() => {});
        }
      );
      hls.on(
        Hls.Events.ERROR,
-       (_event, data) => {
+       (
+         _event,
+         data
+       ) => {
          console.error(
            "HLS error:",
            data
          );
-         if (!data.fatal) {
+         if (
+           !data.fatal
+         ) {
            return;
          }
          if (
@@ -214,6 +252,9 @@ export default function CameraCard({
    refreshToken,
    muted,
  ]);
+ /*
+  * Recording timer cleanup
+  */
  useEffect(() => {
    return () => {
      if (
@@ -226,7 +267,9 @@ export default function CameraCard({
    };
  }, []);
  function startRecordingTimer() {
-   setRecordingSeconds(0);
+   setRecordingSeconds(
+     0
+   );
    if (
      recordingTimerRef.current
    ) {
@@ -274,13 +317,21 @@ export default function CameraCard({
      "0"
    )}`;
  }
+ /*
+  * Refresh stream
+  */
  function handleRefresh() {
-   setVideoReady(false);
+   setVideoReady(
+     false
+   );
    setRefreshToken(
      (value) =>
        value + 1
    );
  }
+ /*
+  * Audio
+  */
  function handleMuteToggle() {
    const video =
      videoRef.current;
@@ -294,7 +345,15 @@ export default function CameraCard({
    setMuted(
      nextMuted
    );
+   if (!nextMuted) {
+     video
+       .play()
+       .catch(() => {});
+   }
  }
+ /*
+  * Fullscreen
+  */
  async function handleFullscreen() {
    if (
      !containerRef.current
@@ -316,6 +375,9 @@ export default function CameraCard({
      );
    }
  }
+ /*
+  * Snapshot
+  */
  async function handleSnapshot() {
    const video =
      videoRef.current;
@@ -413,7 +475,8 @@ export default function CameraCard({
        error
      );
      alert(
-       error instanceof Error
+       error instanceof
+         Error
          ? error.message
          : "Failed to take snapshot"
      );
@@ -423,6 +486,9 @@ export default function CameraCard({
      );
    }
  }
+ /*
+  * Start recording
+  */
  async function startRecording() {
    if (
      recordingLoading ||
@@ -460,7 +526,8 @@ export default function CameraCard({
        error
      );
      alert(
-       error instanceof Error
+       error instanceof
+         Error
          ? error.message
          : "Failed to start recording"
      );
@@ -470,6 +537,9 @@ export default function CameraCard({
      );
    }
  }
+ /*
+  * Stop recording
+  */
  async function stopRecording() {
    if (
      recordingLoading ||
@@ -507,7 +577,8 @@ export default function CameraCard({
        error
      );
      alert(
-       error instanceof Error
+       error instanceof
+         Error
          ? error.message
          : "Failed to stop recording"
      );
@@ -518,7 +589,9 @@ export default function CameraCard({
    }
  }
  async function handleRecord() {
-   if (isRecording) {
+   if (
+     isRecording
+   ) {
      await stopRecording();
    } else {
      await startRecording();
@@ -526,28 +599,72 @@ export default function CameraCard({
  }
  return (
 <div
-     className={`overflow-hidden rounded-2xl border bg-white transition-all duration-300 ${
-       isOnline
-         ? "border-emerald-300 shadow-[0_0_0_1px_rgba(16,185,129,0.08),0_0_22px_rgba(16,185,129,0.16)]"
-         : "border-red-300 shadow-[0_0_0_1px_rgba(239,68,68,0.08),0_0_22px_rgba(239,68,68,0.14)]"
+     className={`overflow-hidden border bg-white transition-all duration-300 ${
+       isOperator
+         ? "rounded-xl border-slate-700 bg-slate-950 shadow-xl"
+         : isOnline
+           ? "rounded-2xl border-emerald-300 shadow-[0_0_0_1px_rgba(16,185,129,0.08),0_0_22px_rgba(16,185,129,0.16)]"
+           : "rounded-2xl border-red-300 shadow-[0_0_0_1px_rgba(239,68,68,0.08),0_0_22px_rgba(239,68,68,0.14)]"
      }`}
 >
-     {/* Header */}
-<div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-<div>
-<h3 className="font-semibold text-slate-900">
-           {name}
+     {/* ============================
+         HEADER
+        ============================ */}
+<div
+       className={`flex items-center justify-between border-b px-4 py-3 ${
+         isOperator
+           ? "border-slate-800 bg-slate-900"
+           : "border-slate-100 bg-white"
+       }`}
+>
+<div className="flex min-w-0 items-center gap-3">
+         {isOperator &&
+           onBack && (
+<button
+               type="button"
+               onClick={
+                 onBack
+               }
+               title="Back to Multi View"
+               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-700 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+>
+<ArrowLeft
+                 size={17}
+               />
+</button>
+           )}
+<div className="min-w-0">
+<h3
+             className={`truncate font-semibold ${
+               isOperator
+                 ? "text-white"
+                 : "text-slate-900"
+             }`}
+>
+             {name}
 </h3>
-<p className="text-sm text-slate-500">
-           {location}
+<p
+             className={`truncate text-sm ${
+               isOperator
+                 ? "text-slate-400"
+                 : "text-slate-500"
+             }`}
+>
+             {location}
 </p>
 </div>
+</div>
 <div className="flex items-center gap-3">
+         {/* Status */}
 <div
            className={`flex items-center gap-2 rounded-full px-2.5 py-1 ${
              isOnline
-               ? "bg-emerald-50"
-               : "bg-red-50"
+               ? isOperator
+                 ? "bg-emerald-500/15"
+                 : "bg-emerald-50"
+               : isOperator
+                 ? "bg-red-500/15"
+                 : "bg-red-50"
            }`}
 >
 <span
@@ -560,32 +677,44 @@ export default function CameraCard({
 <span
              className={`text-xs font-medium ${
                isOnline
-                 ? "text-emerald-700"
-                 : "text-red-700"
+                 ? isOperator
+                   ? "text-emerald-400"
+                   : "text-emerald-700"
+                 : isOperator
+                   ? "text-red-400"
+                   : "text-red-700"
              }`}
 >
              {isOnline
-               ? "Online"
-               : "Offline"}
+               ? "LIVE"
+               : "OFFLINE"}
 </span>
 </div>
+         {!isOperator && (
 <button
-           type="button"
-           title="More"
-           className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100"
+             type="button"
+             title="More"
+             className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100"
 >
 <MoreVertical
-             size={18}
-           />
+               size={18}
+             />
 </button>
+         )}
 </div>
 </div>
-     {/* Video */}
+     {/* ============================
+         VIDEO
+        ============================ */}
 <div
        ref={
          containerRef
        }
-       className="relative aspect-video overflow-hidden bg-black"
+       className={`relative overflow-hidden bg-black ${
+         isOperator
+           ? "aspect-video"
+           : "aspect-video"
+       }`}
 >
        {isOnline ? (
 <>
@@ -605,20 +734,35 @@ export default function CameraCard({
              className="h-full w-full object-contain"
            />
            {!videoReady && (
-<div className="absolute inset-0 flex items-center justify-center bg-slate-100">
+<div className="absolute inset-0 flex items-center justify-center bg-slate-950">
 <div className="text-center">
 <RefreshCw
                    size={
-                     28
+                     isOperator
+                       ? 34
+                       : 28
                    }
-                   className="mx-auto animate-spin text-slate-400"
+                   className="mx-auto animate-spin text-slate-500"
                  />
-<p className="mt-3 text-sm text-slate-500">
+<p className="mt-3 text-sm text-slate-400">
                    Connecting to camera...
 </p>
 </div>
 </div>
            )}
+           {/* Channel indicator */}
+           {isOperator && (
+<div className="absolute right-3 top-3 rounded-md bg-black/60 px-2 py-1 font-mono text-[11px] text-white/80 backdrop-blur">
+               CAM{" "}
+               {String(
+                 id
+               ).padStart(
+                 2,
+                 "0"
+               )}
+</div>
+           )}
+           {/* Recording */}
            {isRecording && (
 <div className="absolute left-3 top-3 flex items-center gap-2 rounded-lg bg-black/75 px-3 py-1.5 text-xs font-medium text-white backdrop-blur">
 <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
@@ -632,32 +776,71 @@ export default function CameraCard({
            )}
 </>
        ) : (
-<div className="flex h-full items-center justify-center bg-slate-100">
+<div
+           className={`flex h-full items-center justify-center ${
+             isOperator
+               ? "bg-slate-950"
+               : "bg-slate-100"
+           }`}
+>
 <div className="text-center">
-<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
+<div
+               className={`mx-auto flex items-center justify-center rounded-full ${
+                 isOperator
+                   ? "h-20 w-20 bg-red-500/10"
+                   : "h-16 w-16 bg-red-50"
+               }`}
+>
 <VideoOff
                  size={
-                   34
+                   isOperator
+                     ? 40
+                     : 34
                  }
                  strokeWidth={
                    1.5
                  }
-                 className="text-red-400"
+                 className={
+                   isOperator
+                     ? "text-red-500"
+                     : "text-red-400"
+                 }
                />
 </div>
-<p className="mt-3 font-medium text-slate-700">
-               No stream
+<p
+               className={`mt-3 font-semibold ${
+                 isOperator
+                   ? "text-slate-300"
+                   : "text-slate-700"
+               }`}
+>
+               No Signal
 </p>
-<p className="mt-1 text-sm text-slate-500">
+<p
+               className={`mt-1 text-sm ${
+                 isOperator
+                   ? "text-slate-500"
+                   : "text-slate-500"
+               }`}
+>
                Camera is offline or unreachable
 </p>
 </div>
 </div>
        )}
 </div>
-     {/* Controls */}
-<div className="flex items-center justify-between border-t border-slate-100 bg-white px-4 py-3">
-<div className="flex items-center gap-2">
+     {/* ============================
+         CONTROLS
+        ============================ */}
+<div
+       className={`flex flex-col gap-3 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between ${
+         isOperator
+           ? "border-slate-800 bg-slate-900"
+           : "border-slate-100 bg-white"
+       }`}
+>
+<div className="flex flex-wrap items-center gap-2">
+         {/* Snapshot */}
 <button
            type="button"
            onClick={
@@ -668,7 +851,11 @@ export default function CameraCard({
              !videoReady ||
              snapshotSaving
            }
-           className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+           className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${
+             isOperator
+               ? "border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+               : "border border-slate-200 text-slate-700 hover:bg-slate-50"
+           }`}
 >
 <Camera
              size={17}
@@ -677,6 +864,7 @@ export default function CameraCard({
              ? "Saving..."
              : "Snapshot"}
 </button>
+         {/* Record */}
 <button
            type="button"
            onClick={
@@ -689,7 +877,9 @@ export default function CameraCard({
            className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${
              isRecording
                ? "bg-red-600 text-white hover:bg-red-700"
-               : "border border-slate-200 text-slate-700 hover:bg-slate-50"
+               : isOperator
+                 ? "border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+                 : "border border-slate-200 text-slate-700 hover:bg-slate-50"
            }`}
 >
            {isRecording ? (
@@ -702,7 +892,7 @@ export default function CameraCard({
                />
                {recordingLoading
                  ? "Stopping..."
-                 : "Stop"}
+                 : "Stop Recording"}
 </>
            ) : (
 <>
@@ -715,6 +905,7 @@ export default function CameraCard({
 </button>
 </div>
 <div className="flex items-center gap-1">
+         {/* Sound */}
 <button
            type="button"
            onClick={
@@ -728,22 +919,23 @@ export default function CameraCard({
                ? "Unmute"
                : "Mute"
            }
-           className="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 disabled:opacity-40"
+           className={`rounded-lg p-2 transition disabled:opacity-40 ${
+             isOperator
+               ? "text-slate-300 hover:bg-slate-800"
+               : "text-slate-600 hover:bg-slate-100"
+           }`}
 >
            {muted ? (
 <VolumeX
-               size={
-                 18
-               }
+               size={18}
              />
            ) : (
 <Volume2
-               size={
-                 18
-               }
+               size={18}
              />
            )}
 </button>
+         {/* Refresh */}
 <button
            type="button"
            onClick={
@@ -753,12 +945,17 @@ export default function CameraCard({
              !isOnline
            }
            title="Reconnect stream"
-           className="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 disabled:opacity-40"
+           className={`rounded-lg p-2 transition disabled:opacity-40 ${
+             isOperator
+               ? "text-slate-300 hover:bg-slate-800"
+               : "text-slate-600 hover:bg-slate-100"
+           }`}
 >
 <RefreshCw
              size={18}
            />
 </button>
+         {/* Fullscreen */}
 <button
            type="button"
            onClick={
@@ -769,16 +966,25 @@ export default function CameraCard({
              !videoReady
            }
            title="Fullscreen"
-           className="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 disabled:opacity-40"
+           className={`rounded-lg p-2 transition disabled:opacity-40 ${
+             isOperator
+               ? "text-slate-300 hover:bg-slate-800"
+               : "text-slate-600 hover:bg-slate-100"
+           }`}
 >
 <Maximize2
              size={18}
            />
 </button>
+         {/* Settings */}
 <button
            type="button"
            title="Camera settings"
-           className="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100"
+           className={`rounded-lg p-2 transition ${
+             isOperator
+               ? "text-slate-300 hover:bg-slate-800"
+               : "text-slate-600 hover:bg-slate-100"
+           }`}
 >
 <Settings
              size={18}

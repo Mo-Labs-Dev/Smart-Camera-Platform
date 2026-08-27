@@ -53,27 +53,35 @@ export default function DashboardClient({
 }: DashboardClientProps) {
  const [statuses, setStatuses] =
    useState<CameraStatus[]>([]);
- const [statusLoading, setStatusLoading] =
-   useState(true);
+ const [
+   statusLoading,
+   setStatusLoading,
+ ] = useState(true);
  useEffect(() => {
    let cancelled = false;
    async function loadStatus() {
      try {
-       const response = await fetch(
-         "/api/cameras/status",
-         {
-           cache: "no-store",
-         }
-       );
+       const response =
+         await fetch(
+           "/api/cameras/status",
+           {
+             cache: "no-store",
+           }
+         );
        if (!response.ok) {
          throw new Error(
            "Unable to load camera status"
          );
        }
        const data =
-         (await response.json()) as CameraStatus[];
-       if (!cancelled) {
-         setStatuses(data);
+         await response.json();
+       if (
+         !cancelled &&
+         Array.isArray(data)
+       ) {
+         setStatuses(
+           data as CameraStatus[]
+         );
        }
      } catch (error) {
        console.error(
@@ -82,65 +90,78 @@ export default function DashboardClient({
        );
      } finally {
        if (!cancelled) {
-         setStatusLoading(false);
+         setStatusLoading(
+           false
+         );
        }
      }
    }
    loadStatus();
-   const interval = window.setInterval(
-     loadStatus,
-     10000
-   );
+   const interval =
+     window.setInterval(
+       loadStatus,
+       10000
+     );
    return () => {
      cancelled = true;
-     window.clearInterval(interval);
+     window.clearInterval(
+       interval
+     );
    };
  }, []);
- const cameras = useMemo<
-   DashboardCamera[]
+ const cameras =
+   useMemo<
+     DashboardCamera[]
 >(() => {
-   const hlsBaseUrl =
-     process.env.NEXT_PUBLIC_MEDIAMTX_HLS_BASE_URL ??
-     "http://localhost:8888";
-   return cameraConfig.map((camera) => {
-     const currentStatus =
-       statuses.find(
-         (status) =>
-status.id === camera.id
-       );
-     const status =
-       currentStatus?.status ??
-       ("offline" as const);
-     const streamUrl =
-       camera.streamPath
-         ? `${hlsBaseUrl}/${camera.streamPath}/index.m3u8`
-         : undefined;
-     return {
-       id: camera.id,
-       name: camera.name,
-       location: camera.location,
-       host: camera.host,
-       streamPath:
-         camera.streamPath,
-       status,
-       streamUrl,
-     };
-   });
- }, [
-   cameraConfig,
-   statuses,
- ]);
+     const hlsBaseUrl =
+       process.env
+         .NEXT_PUBLIC_MEDIAMTX_HLS_BASE_URL ??
+       "http://localhost:8888";
+     return cameraConfig.map(
+       (camera) => {
+         const currentStatus =
+           statuses.find(
+             (status) =>
+status.id ===
+camera.id
+           );
+         const status =
+           currentStatus?.status ??
+           ("offline" as const);
+         const streamUrl =
+           camera.streamPath
+             ? `${hlsBaseUrl}/${camera.streamPath}/index.m3u8`
+             : undefined;
+         return {
+           id: camera.id,
+           name: camera.name,
+           location:
+             camera.location,
+           host: camera.host,
+           streamPath:
+             camera.streamPath,
+           status,
+           streamUrl,
+         };
+       }
+     );
+   }, [
+     cameraConfig,
+     statuses,
+   ]);
  const totalCameras =
    cameras.length;
  const onlineCameras =
    cameras.filter(
      (camera) =>
-       camera.status === "online"
+       camera.status ===
+       "online"
    ).length;
  const offlineCameras =
    cameras.filter(
      (camera) =>
-       camera.status === "offline"
+       camera.status ===
+       "offline"
    ).length;
  return (
 <>
@@ -148,7 +169,9 @@ status.id === camera.id
 <section className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
 <StatCard
          title="Total Cameras"
-         value={totalCameras}
+         value={
+           totalCameras
+         }
          subtitle="All cameras registered"
          icon={Monitor}
          color="blue"
@@ -161,7 +184,9 @@ status.id === camera.id
              : onlineCameras
          }
          subtitle="Cameras online"
-         icon={CheckCircle2}
+         icon={
+           CheckCircle2
+         }
          color="green"
        />
 <StatCard
@@ -179,21 +204,27 @@ status.id === camera.id
          title="Events (24h)"
          value={events24h}
          subtitle="Total events"
-         icon={CalendarDays}
+         icon={
+           CalendarDays
+         }
          color="orange"
        />
 </section>
 <section className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
 <StatCard
          title="Recordings"
-         value={totalRecordings}
+         value={
+           totalRecordings
+         }
          subtitle="Saved recordings"
          icon={Folder}
          color="blue"
        />
 <StatCard
          title="Snapshots"
-         value={totalSnapshots}
+         value={
+           totalSnapshots
+         }
          subtitle="Saved snapshots"
          icon={Camera}
          color="green"
@@ -204,8 +235,12 @@ status.id === camera.id
          cameras={cameras}
        />
 <StatusPanel
-         online={onlineCameras}
-         offline={offlineCameras}
+         online={
+           onlineCameras
+         }
+         offline={
+           offlineCameras
+         }
          recentEvents={
            recentEvents
          }
