@@ -1,0 +1,172 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+export type RecordingProcessState = {
+ cameraId: number;
+ recordingId: number;
+ pid: number;
+ filename: string;
+ filePath: string;
+ startedAt: string;
+};
+export function getRecordingsDirectory() {
+ return path.resolve(
+   process.cwd(),
+   "recordings"
+ );
+}
+function getStateDirectory() {
+ return path.resolve(
+   process.cwd(),
+   "recordings",
+   ".recording-state"
+ );
+}
+function getStateFile(
+ cameraId: number
+) {
+ return path.resolve(
+   getStateDirectory(),
+   `camera-${cameraId}.json`
+ );
+}
+export async function ensureRecordingDirectories() {
+ await fs.mkdir(
+   getRecordingsDirectory(),
+   {
+     recursive: true,
+   }
+ );
+ await fs.mkdir(
+   getStateDirectory(),
+   {
+     recursive: true,
+   }
+ );
+}
+export async function saveRecordingState(
+ state: RecordingProcessState
+) {
+ await ensureRecordingDirectories();
+ await fs.writeFile(
+   getStateFile(
+     state.cameraId
+   ),
+   JSON.stringify(
+     state,
+     null,
+     2
+   ),
+   "utf8"
+ );
+}
+export async function readRecordingState(
+ cameraId: number
+): Promise<RecordingProcessState | null> {
+ try {
+   const content =
+     await fs.readFile(
+       getStateFile(
+         cameraId
+       ),
+       "utf8"
+     );
+   return JSON.parse(
+     content
+   ) as RecordingProcessState;
+ } catch (
+   error: unknown
+ ) {
+   const code =
+     typeof error ===
+       "object" &&
+     error !== null &&
+     "code" in error
+       ? String(
+           (
+             error as {
+               code?: string;
+             }
+           ).code
+         )
+       : null;
+   if (
+     code === "ENOENT"
+   ) {
+     return null;
+   }
+   throw error;
+ }
+}
+export async function removeRecordingState(
+ cameraId: number
+) {
+ try {
+   await fs.unlink(
+     getStateFile(
+       cameraId
+     )
+   );
+ } catch (
+   error: unknown
+ ) {
+   const code =
+     typeof error ===
+       "object" &&
+     error !== null &&
+     "code" in error
+       ? String(
+           (
+             error as {
+               code?: string;
+             }
+           ).code
+         )
+       : null;
+   if (
+     code !== "ENOENT"
+   ) {
+     throw error;
+   }
+ }
+}
+export function isProcessRunning(
+ pid: number
+) {
+ try {
+   process.kill(
+     pid,
+     0
+   );
+   return true;
+ } catch {
+   return false;
+ }
+}
+export async function waitForProcessToStop(
+ pid: number,
+ timeoutMs = 10000
+) {
+ const started =
+   Date.now();
+ while (
+   Date.now() -
+     started <
+   timeoutMs
+ ) {
+   if (
+     !isProcessRunning(
+       pid
+     )
+   ) {
+     return true;
+   }
+   await new Promise(
+     (resolve) =>
+       setTimeout(
+         resolve,
+         250
+       )
+   );
+ }
+ return false;
+}
