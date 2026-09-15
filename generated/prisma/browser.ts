@@ -18,6 +18,11 @@ export { Prisma }
 export * as $Enums from './enums'
 export * from './enums';
 /**
+ * Model User
+ * 
+ */
+export type User = Prisma.UserModel
+/**
  * Model Camera
  * 
  */
@@ -37,3 +42,13 @@ export type Snapshot = Prisma.SnapshotModel
  * 
  */
 export type Event = Prisma.EventModel
+/**
+ * Model SystemSettings
+ * 
+ */
+export type SystemSettings = Prisma.SystemSettingsModel
+/**
+ * Model MapArea
+ * 
+ */
+export type MapArea = Prisma.MapAreaModel

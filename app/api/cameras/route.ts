@@ -1,11 +1,22 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+import {
+ NextResponse,
+} from "next/server";
+import {
+ prisma,
+} from "@/lib/prisma";
+import {
+ requirePermission,
+} from "@/lib/authorization";
+export const runtime =
+ "nodejs";
+export const dynamic =
+ "force-dynamic";
 /*
 * GET /api/cameras
 *
-* Returns all cameras from Prisma.
+* Authenticated users may view cameras.
+* Global authentication is handled
+* by proxy.ts.
 */
 export async function GET() {
  try {
@@ -38,17 +49,24 @@ export async function GET() {
 /*
 * POST /api/cameras
 *
-* Creates a new camera.
+* ADMIN only.
 */
 export async function POST(
  request: Request
 ) {
+ const access =
+   await requirePermission(
+     "camera:manage"
+   );
+ if (!access.ok) {
+   return access.response;
+ }
  try {
    const body =
      await request.json();
    const name =
      typeof body.name ===
-     "string"
+       "string"
        ? body.name.trim()
        : "";
    const location =
@@ -69,9 +87,6 @@ export async function POST(
      body.streamPath.trim()
        ? body.streamPath.trim()
        : null;
-   /*
-    * Camera name is required.
-    */
    if (!name) {
      return NextResponse.json(
        {
@@ -84,20 +99,15 @@ export async function POST(
        }
      );
    }
-   /*
-    * Prevent duplicate host/IP.
-    *
-    * This is optional but useful
-    * so the same physical camera
-    * isn't added twice accidentally.
-    */
    if (host) {
      const existingHost =
-       await prisma.camera.findFirst({
-         where: {
-           host,
-         },
-       });
+       await prisma.camera.findFirst(
+         {
+           where: {
+             host,
+           },
+         }
+       );
      if (existingHost) {
        return NextResponse.json(
          {
@@ -111,16 +121,15 @@ export async function POST(
        );
      }
    }
-   /*
-    * Prevent duplicate MediaMTX path.
-    */
    if (streamPath) {
      const existingStream =
-       await prisma.camera.findFirst({
-         where: {
-           streamPath,
-         },
-       });
+       await prisma.camera.findFirst(
+         {
+           where: {
+             streamPath,
+           },
+         }
+       );
      if (existingStream) {
        return NextResponse.json(
          {
@@ -134,9 +143,6 @@ export async function POST(
        );
      }
    }
-   /*
-    * Create the camera.
-    */
    const camera =
      await prisma.camera.create({
        data: {
@@ -146,9 +152,6 @@ export async function POST(
          streamPath,
        },
      });
-   /*
-    * Optional initial event.
-    */
    await prisma.event.create({
      data: {
        cameraId:

@@ -1,5 +1,7 @@
 "use client";
 
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
+
 import {
 Camera,
 Check,
@@ -20,9 +22,7 @@ X,
 } from "lucide-react";
 
 import Hls from "hls.js";
-
 import { useRouter } from "next/navigation";
-
 import {
 useEffect,
 useMemo,
@@ -47,7 +47,7 @@ status: "online" | "offline";
 
 type CameraStatus = {
 id: number;
-name: string;
+name?: string;
 status: "online" | "offline";
 };
 
@@ -68,8 +68,6 @@ type ViewMode =
 | "patrol"
 | "manage";
 
-const PATROL_SECONDS = 10;
-
 const emptyForm: FormState = {
 name: "",
 location: "",
@@ -80,12 +78,11 @@ streamPath: "",
 /*
 * Lightweight CCTV feed.
 *
-* Used only for:
+* Used by:
 * - Multi View
 * - Patrol
 *
-* The full single-camera operator view
-* uses CameraCard instead.
+* Full operator mode uses CameraCard.
 */
 function CCTVFeed({
 camera,
@@ -141,7 +138,7 @@ null;
 }
 
 /*
-* Safari / native HLS
+* Safari / native HLS.
 */
 if (
 video.canPlayType(
@@ -199,7 +196,7 @@ video.load();
 }
 
 /*
-* Chrome / Edge / Firefox
+* Chrome / Edge / Firefox.
 */
 if (Hls.isSupported()) {
 const hls =
@@ -296,27 +293,19 @@ isOnline,
 return (
 <button
 type="button"
-onClick={
-onClick
-}
-disabled={
-!onClick
-}
+onClick={onClick}
+disabled={!onClick}
 className="group relative block aspect-video w-full overflow-hidden bg-black text-left disabled:cursor-default"
 >
 {isOnline ? (
 <>
 <video
-ref={
-videoRef
-}
+ref={videoRef}
 crossOrigin="anonymous"
 autoPlay
 muted
 playsInline
-controls={
-false
-}
+controls={false}
 className="h-full w-full object-cover"
 />
 
@@ -363,7 +352,6 @@ Camera offline or unreachable
 </div>
 )}
 
-{/* Top overlay */}
 <div className="absolute inset-x-0 top-0 flex items-start justify-between bg-gradient-to-b from-black/80 to-transparent p-3">
 <div className="min-w-0">
 <p
@@ -397,7 +385,6 @@ isOnline
 </div>
 </div>
 
-{/* Camera channel */}
 <div className="absolute bottom-3 left-3 rounded bg-black/60 px-2 py-1 font-mono text-[10px] text-white/80 backdrop-blur">
 CAM{" "}
 {String(
@@ -408,7 +395,6 @@ camera.id
 )}
 </div>
 
-{/* Click to operator */}
 {onClick && (
 <div className="absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-lg bg-black/60 text-white opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
 <Maximize2
@@ -425,6 +411,35 @@ cameras,
 }: Props) {
 const router =
 useRouter();
+
+/*
+* Runtime platform settings.
+*/
+const {
+settings,
+} =
+usePlatformSettings();
+
+/*
+* Settings -> Patrol interval.
+*
+* Minimum 3 seconds protects the UI
+* from invalid / overly aggressive values.
+*/
+const PATROL_SECONDS =
+Math.max(
+3,
+settings.patrolIntervalSec
+);
+
+/*
+* Settings -> Camera status refresh.
+*/
+const CAMERA_STATUS_REFRESH_MS =
+Math.max(
+3,
+settings.cameraStatusRefreshSec
+) * 1000;
 
 const [
 statuses,
@@ -492,9 +507,27 @@ number | null
 
 /*
 * Camera status polling.
+*
+* Refresh frequency comes from
+* Settings -> Camera status refresh.
+*
+* Supports:
+*
+* [
+* { id, status }
+* ]
+*
+* and:
+*
+* {
+* cameras: [
+* { id, status }
+* ]
+* }
 */
 useEffect(() => {
-let cancelled = false;
+let cancelled =
+false;
 
 async function loadStatus() {
 try {
@@ -514,12 +547,20 @@ return;
 const data =
 await response.json();
 
-if (
-!cancelled &&
-Array.isArray(data)
-) {
+const nextStatuses: CameraStatus[] =
+Array.isArray(
+data
+)
+? data
+: Array.isArray(
+data?.cameras
+)
+? data.cameras
+: [];
+
+if (!cancelled) {
 setStatuses(
-data as CameraStatus[]
+nextStatuses
 );
 }
 } catch (error) {
@@ -530,26 +571,36 @@ error
 }
 }
 
+/*
+* Run immediately.
+*/
 loadStatus();
 
+/*
+* Then continue using
+* the configured interval.
+*/
 const interval =
 window.setInterval(
 loadStatus,
-10000
+CAMERA_STATUS_REFRESH_MS
 );
 
 return () => {
-cancelled = true;
+cancelled =
+true;
 
 window.clearInterval(
 interval
 );
 };
-}, []);
+}, [
+CAMERA_STATUS_REFRESH_MS,
+]);
 
 /*
-* Merge database cameras
-* with live status.
+* Merge database camera data
+* with live connectivity state.
 */
 const camerasWithStatus =
 useMemo<
@@ -611,7 +662,8 @@ totalCameras
 : null;
 
 /*
-* Camera selected from Multi View.
+* Camera selected from
+* Multi View.
 */
 const selectedCamera =
 selectedCameraId !==
@@ -624,7 +676,7 @@ selectedCameraId
 : null;
 
 /*
-* If selected camera is deleted,
+* If selected camera gets deleted,
 * return to Multi View.
 */
 useEffect(() => {
@@ -643,7 +695,8 @@ selectedCamera,
 ]);
 
 /*
-* Keep patrol index valid.
+* Keep patrol index valid when
+* cameras are added/deleted.
 */
 useEffect(() => {
 if (
@@ -661,6 +714,26 @@ totalCameras
 );
 }, [
 totalCameras,
+]);
+
+/*
+* IMPORTANT:
+*
+* Synchronize active patrol countdown
+* whenever Settings changes.
+*
+* Example:
+* 10 sec -> 5 sec
+*
+* The current patrol immediately
+* starts using 5 seconds.
+*/
+useEffect(() => {
+setSecondsRemaining(
+PATROL_SECONDS
+);
+}, [
+PATROL_SECONDS,
 ]);
 
 /*
@@ -683,8 +756,7 @@ setSecondsRemaining(
 (current) =>
 Math.max(
 0,
-current -
-1
+current - 1
 )
 );
 },
@@ -703,8 +775,8 @@ totalCameras,
 ]);
 
 /*
-* Change camera when countdown
-* reaches zero.
+* Switch to next camera when
+* countdown reaches zero.
 */
 useEffect(() => {
 if (
@@ -720,8 +792,7 @@ return;
 
 setPatrolIndex(
 (current) =>
-(current +
-1) %
+(current + 1) %
 totalCameras
 );
 
@@ -733,6 +804,7 @@ secondsRemaining,
 viewMode,
 patrolPaused,
 totalCameras,
+PATROL_SECONDS,
 ]);
 
 function changeView(
@@ -786,8 +858,7 @@ return;
 
 setPatrolIndex(
 (current) =>
-(current +
-1) %
+(current + 1) %
 totalCameras
 );
 
@@ -832,8 +903,7 @@ function openEdit(
 camera: CameraItem
 ) {
 setForm({
-id:
-camera.id,
+id: camera.id,
 
 name:
 camera.name,
@@ -1087,7 +1157,6 @@ CCTV Monitor
 </div>
 
 <div className="flex flex-wrap items-center gap-3">
-{/* View selector */}
 <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1.5">
 <button
 type="button"
@@ -1189,20 +1258,11 @@ Add a camera to begin monitoring.
 </div>
 ) : (
 <>
-{/* ==========================
-MULTI VIEW
-========================== */}
-
+{/* MULTI VIEW */}
 {viewMode ===
 "multiview" && (
 <div className="p-5">
 {selectedCamera ? (
-/*
-* Full operator view.
-*
-* Uses CameraCard so all
-* camera controls work.
-*/
 <CameraCard
 key={`operator-${selectedCamera.id}`}
 id={
@@ -1230,12 +1290,7 @@ null
 }
 />
 ) : (
-/*
-* ONE CCTV MONITOR
-* containing four channels.
-*/
 <div className="overflow-hidden rounded-xl border-4 border-slate-800 bg-slate-950 shadow-lg">
-{/* Monitor header */}
 <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900 px-4 py-3">
 <div className="flex items-center gap-3">
 <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
@@ -1254,7 +1309,6 @@ totalCameras,
 </p>
 </div>
 
-{/* 2 x 2 channels */}
 <div className="grid grid-cols-2 gap-px bg-slate-700">
 {camerasWithStatus
 .slice(
@@ -1281,7 +1335,6 @@ camera.id
 )
 )}
 
-{/* Empty channels */}
 {Array.from({
 length:
 Math.max(
@@ -1318,7 +1371,6 @@ Empty Channel
 )}
 </div>
 
-{/* Monitor footer */}
 <div className="flex items-center justify-between border-t border-slate-800 bg-slate-900 px-4 py-2">
 <div className="flex items-center gap-4 text-[10px] text-slate-500">
 <span>
@@ -1345,16 +1397,12 @@ SMART CAMERA PLATFORM
 </div>
 )}
 
-{/* ==========================
-PATROL
-========================== */}
-
+{/* PATROL */}
 {viewMode ===
 "patrol" &&
 patrolCamera && (
 <div className="p-5">
 <div className="space-y-4">
-{/* Patrol controls */}
 <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 lg:flex-row lg:items-center lg:justify-between">
 <div>
 <p className="text-sm font-semibold text-slate-900">
@@ -1369,7 +1417,11 @@ of{" "}
 {
 totalCameras
 }{" "}
-· 10 seconds each
+·{" "}
+{
+PATROL_SECONDS
+}{" "}
+seconds each
 </p>
 </div>
 
@@ -1442,7 +1494,6 @@ size={
 14
 }
 />
-
 Resume
 </>
 ) : (
@@ -1452,7 +1503,6 @@ size={
 14
 }
 />
-
 Pause
 </>
 )}
@@ -1494,7 +1544,6 @@ size={
 </div>
 </div>
 
-{/* Patrol monitor */}
 <div className="overflow-hidden rounded-xl border-4 border-slate-800 bg-slate-950">
 <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900 px-4 py-3">
 <div className="flex items-center gap-2">
@@ -1524,7 +1573,6 @@ patrolCamera
 large
 />
 
-{/* Countdown */}
 <div className="h-1.5 bg-slate-800">
 <div
 className="h-full bg-blue-500 transition-all duration-1000"
@@ -1544,7 +1592,6 @@ PATROL_SECONDS) *
 </div>
 </div>
 
-{/* Patrol channels */}
 <div
 className={`grid gap-2 ${
 totalCameras <=
@@ -1609,10 +1656,7 @@ camera.id
 </div>
 )}
 
-{/* ==========================
-MANAGE
-========================== */}
-
+{/* MANAGE */}
 {viewMode ===
 "manage" && (
 <div className="divide-y divide-slate-100">
@@ -1747,10 +1791,7 @@ size={
 )}
 </section>
 
-{/* ==========================
-ADD / EDIT CAMERA
-========================== */}
-
+{/* ADD / EDIT CAMERA */}
 {open && (
 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-6">
 <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
@@ -1784,7 +1825,6 @@ size={18}
 </div>
 
 <div className="space-y-4 p-5">
-{/* Name */}
 <div>
 <label className="text-xs font-medium text-slate-600">
 Camera name
@@ -1815,7 +1855,6 @@ placeholder="Camera 1"
 />
 </div>
 
-{/* Location */}
 <div>
 <label className="text-xs font-medium text-slate-600">
 Location
@@ -1846,7 +1885,6 @@ placeholder="Lab Area A"
 />
 </div>
 
-{/* IP */}
 <div>
 <label className="text-xs font-medium text-slate-600">
 Camera host / IP
@@ -1877,7 +1915,6 @@ placeholder="192.168.178.71"
 />
 </div>
 
-{/* Stream */}
 <div>
 <label className="text-xs font-medium text-slate-600">
 MediaMTX stream path

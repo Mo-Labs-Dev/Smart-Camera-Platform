@@ -28,10 +28,16 @@ export type AggregateCamera = {
 
 export type CameraAvgAggregateOutputType = {
   id: number | null
+  mapX: number | null
+  mapY: number | null
+  mapAreaId: number | null
 }
 
 export type CameraSumAggregateOutputType = {
   id: number | null
+  mapX: number | null
+  mapY: number | null
+  mapAreaId: number | null
 }
 
 export type CameraMinAggregateOutputType = {
@@ -40,6 +46,9 @@ export type CameraMinAggregateOutputType = {
   location: string | null
   host: string | null
   streamPath: string | null
+  mapX: number | null
+  mapY: number | null
+  mapAreaId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -50,6 +59,9 @@ export type CameraMaxAggregateOutputType = {
   location: string | null
   host: string | null
   streamPath: string | null
+  mapX: number | null
+  mapY: number | null
+  mapAreaId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -60,6 +72,9 @@ export type CameraCountAggregateOutputType = {
   location: number
   host: number
   streamPath: number
+  mapX: number
+  mapY: number
+  mapAreaId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -68,10 +83,16 @@ export type CameraCountAggregateOutputType = {
 
 export type CameraAvgAggregateInputType = {
   id?: true
+  mapX?: true
+  mapY?: true
+  mapAreaId?: true
 }
 
 export type CameraSumAggregateInputType = {
   id?: true
+  mapX?: true
+  mapY?: true
+  mapAreaId?: true
 }
 
 export type CameraMinAggregateInputType = {
@@ -80,6 +101,9 @@ export type CameraMinAggregateInputType = {
   location?: true
   host?: true
   streamPath?: true
+  mapX?: true
+  mapY?: true
+  mapAreaId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -90,6 +114,9 @@ export type CameraMaxAggregateInputType = {
   location?: true
   host?: true
   streamPath?: true
+  mapX?: true
+  mapY?: true
+  mapAreaId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -100,6 +127,9 @@ export type CameraCountAggregateInputType = {
   location?: true
   host?: true
   streamPath?: true
+  mapX?: true
+  mapY?: true
+  mapAreaId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -197,6 +227,9 @@ export type CameraGroupByOutputType = {
   location: string | null
   host: string | null
   streamPath: string | null
+  mapX: number | null
+  mapY: number | null
+  mapAreaId: number | null
   createdAt: Date
   updatedAt: Date
   _count: CameraCountAggregateOutputType | null
@@ -230,8 +263,12 @@ export type CameraWhereInput = {
   location?: Prisma.StringNullableFilter<"Camera"> | string | null
   host?: Prisma.StringNullableFilter<"Camera"> | string | null
   streamPath?: Prisma.StringNullableFilter<"Camera"> | string | null
+  mapX?: Prisma.FloatNullableFilter<"Camera"> | number | null
+  mapY?: Prisma.FloatNullableFilter<"Camera"> | number | null
+  mapAreaId?: Prisma.IntNullableFilter<"Camera"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Camera"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Camera"> | Date | string
+  mapArea?: Prisma.XOR<Prisma.MapAreaNullableScalarRelationFilter, Prisma.MapAreaWhereInput> | null
   recordings?: Prisma.RecordingListRelationFilter
   snapshots?: Prisma.SnapshotListRelationFilter
   events?: Prisma.EventListRelationFilter
@@ -243,8 +280,12 @@ export type CameraOrderByWithRelationInput = {
   location?: Prisma.SortOrderInput | Prisma.SortOrder
   host?: Prisma.SortOrderInput | Prisma.SortOrder
   streamPath?: Prisma.SortOrderInput | Prisma.SortOrder
+  mapX?: Prisma.SortOrderInput | Prisma.SortOrder
+  mapY?: Prisma.SortOrderInput | Prisma.SortOrder
+  mapAreaId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  mapArea?: Prisma.MapAreaOrderByWithRelationInput
   recordings?: Prisma.RecordingOrderByRelationAggregateInput
   snapshots?: Prisma.SnapshotOrderByRelationAggregateInput
   events?: Prisma.EventOrderByRelationAggregateInput
@@ -259,8 +300,12 @@ export type CameraWhereUniqueInput = Prisma.AtLeast<{
   location?: Prisma.StringNullableFilter<"Camera"> | string | null
   host?: Prisma.StringNullableFilter<"Camera"> | string | null
   streamPath?: Prisma.StringNullableFilter<"Camera"> | string | null
+  mapX?: Prisma.FloatNullableFilter<"Camera"> | number | null
+  mapY?: Prisma.FloatNullableFilter<"Camera"> | number | null
+  mapAreaId?: Prisma.IntNullableFilter<"Camera"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Camera"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Camera"> | Date | string
+  mapArea?: Prisma.XOR<Prisma.MapAreaNullableScalarRelationFilter, Prisma.MapAreaWhereInput> | null
   recordings?: Prisma.RecordingListRelationFilter
   snapshots?: Prisma.SnapshotListRelationFilter
   events?: Prisma.EventListRelationFilter
@@ -272,6 +317,9 @@ export type CameraOrderByWithAggregationInput = {
   location?: Prisma.SortOrderInput | Prisma.SortOrder
   host?: Prisma.SortOrderInput | Prisma.SortOrder
   streamPath?: Prisma.SortOrderInput | Prisma.SortOrder
+  mapX?: Prisma.SortOrderInput | Prisma.SortOrder
+  mapY?: Prisma.SortOrderInput | Prisma.SortOrder
+  mapAreaId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.CameraCountOrderByAggregateInput
@@ -290,6 +338,9 @@ export type CameraScalarWhereWithAggregatesInput = {
   location?: Prisma.StringNullableWithAggregatesFilter<"Camera"> | string | null
   host?: Prisma.StringNullableWithAggregatesFilter<"Camera"> | string | null
   streamPath?: Prisma.StringNullableWithAggregatesFilter<"Camera"> | string | null
+  mapX?: Prisma.FloatNullableWithAggregatesFilter<"Camera"> | number | null
+  mapY?: Prisma.FloatNullableWithAggregatesFilter<"Camera"> | number | null
+  mapAreaId?: Prisma.IntNullableWithAggregatesFilter<"Camera"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Camera"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Camera"> | Date | string
 }
@@ -299,8 +350,11 @@ export type CameraCreateInput = {
   location?: string | null
   host?: string | null
   streamPath?: string | null
+  mapX?: number | null
+  mapY?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  mapArea?: Prisma.MapAreaCreateNestedOneWithoutCamerasInput
   recordings?: Prisma.RecordingCreateNestedManyWithoutCameraInput
   snapshots?: Prisma.SnapshotCreateNestedManyWithoutCameraInput
   events?: Prisma.EventCreateNestedManyWithoutCameraInput
@@ -312,6 +366,9 @@ export type CameraUncheckedCreateInput = {
   location?: string | null
   host?: string | null
   streamPath?: string | null
+  mapX?: number | null
+  mapY?: number | null
+  mapAreaId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   recordings?: Prisma.RecordingUncheckedCreateNestedManyWithoutCameraInput
@@ -324,8 +381,11 @@ export type CameraUpdateInput = {
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   host?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   streamPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mapX?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mapY?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  mapArea?: Prisma.MapAreaUpdateOneWithoutCamerasNestedInput
   recordings?: Prisma.RecordingUpdateManyWithoutCameraNestedInput
   snapshots?: Prisma.SnapshotUpdateManyWithoutCameraNestedInput
   events?: Prisma.EventUpdateManyWithoutCameraNestedInput
@@ -337,6 +397,9 @@ export type CameraUncheckedUpdateInput = {
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   host?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   streamPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mapX?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mapY?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mapAreaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   recordings?: Prisma.RecordingUncheckedUpdateManyWithoutCameraNestedInput
@@ -350,6 +413,9 @@ export type CameraCreateManyInput = {
   location?: string | null
   host?: string | null
   streamPath?: string | null
+  mapX?: number | null
+  mapY?: number | null
+  mapAreaId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -359,6 +425,8 @@ export type CameraUpdateManyMutationInput = {
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   host?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   streamPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mapX?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mapY?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -369,6 +437,9 @@ export type CameraUncheckedUpdateManyInput = {
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   host?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   streamPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mapX?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mapY?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mapAreaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -379,12 +450,18 @@ export type CameraCountOrderByAggregateInput = {
   location?: Prisma.SortOrder
   host?: Prisma.SortOrder
   streamPath?: Prisma.SortOrder
+  mapX?: Prisma.SortOrder
+  mapY?: Prisma.SortOrder
+  mapAreaId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type CameraAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  mapX?: Prisma.SortOrder
+  mapY?: Prisma.SortOrder
+  mapAreaId?: Prisma.SortOrder
 }
 
 export type CameraMaxOrderByAggregateInput = {
@@ -393,6 +470,9 @@ export type CameraMaxOrderByAggregateInput = {
   location?: Prisma.SortOrder
   host?: Prisma.SortOrder
   streamPath?: Prisma.SortOrder
+  mapX?: Prisma.SortOrder
+  mapY?: Prisma.SortOrder
+  mapAreaId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -403,12 +483,18 @@ export type CameraMinOrderByAggregateInput = {
   location?: Prisma.SortOrder
   host?: Prisma.SortOrder
   streamPath?: Prisma.SortOrder
+  mapX?: Prisma.SortOrder
+  mapY?: Prisma.SortOrder
+  mapAreaId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type CameraSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  mapX?: Prisma.SortOrder
+  mapY?: Prisma.SortOrder
+  mapAreaId?: Prisma.SortOrder
 }
 
 export type CameraScalarRelationFilter = {
@@ -421,20 +507,30 @@ export type CameraNullableScalarRelationFilter = {
   isNot?: Prisma.CameraWhereInput | null
 }
 
-export type StringFieldUpdateOperationsInput = {
-  set?: string
+export type CameraListRelationFilter = {
+  every?: Prisma.CameraWhereInput
+  some?: Prisma.CameraWhereInput
+  none?: Prisma.CameraWhereInput
+}
+
+export type CameraOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
 }
 
-export type DateTimeFieldUpdateOperationsInput = {
-  set?: Date | string
+export type NullableFloatFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
   increment?: number
   decrement?: number
   multiply?: number
@@ -485,13 +581,58 @@ export type CameraUpdateOneWithoutEventsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CameraUpdateToOneWithWhereWithoutEventsInput, Prisma.CameraUpdateWithoutEventsInput>, Prisma.CameraUncheckedUpdateWithoutEventsInput>
 }
 
+export type CameraCreateNestedManyWithoutMapAreaInput = {
+  create?: Prisma.XOR<Prisma.CameraCreateWithoutMapAreaInput, Prisma.CameraUncheckedCreateWithoutMapAreaInput> | Prisma.CameraCreateWithoutMapAreaInput[] | Prisma.CameraUncheckedCreateWithoutMapAreaInput[]
+  connectOrCreate?: Prisma.CameraCreateOrConnectWithoutMapAreaInput | Prisma.CameraCreateOrConnectWithoutMapAreaInput[]
+  createMany?: Prisma.CameraCreateManyMapAreaInputEnvelope
+  connect?: Prisma.CameraWhereUniqueInput | Prisma.CameraWhereUniqueInput[]
+}
+
+export type CameraUncheckedCreateNestedManyWithoutMapAreaInput = {
+  create?: Prisma.XOR<Prisma.CameraCreateWithoutMapAreaInput, Prisma.CameraUncheckedCreateWithoutMapAreaInput> | Prisma.CameraCreateWithoutMapAreaInput[] | Prisma.CameraUncheckedCreateWithoutMapAreaInput[]
+  connectOrCreate?: Prisma.CameraCreateOrConnectWithoutMapAreaInput | Prisma.CameraCreateOrConnectWithoutMapAreaInput[]
+  createMany?: Prisma.CameraCreateManyMapAreaInputEnvelope
+  connect?: Prisma.CameraWhereUniqueInput | Prisma.CameraWhereUniqueInput[]
+}
+
+export type CameraUpdateManyWithoutMapAreaNestedInput = {
+  create?: Prisma.XOR<Prisma.CameraCreateWithoutMapAreaInput, Prisma.CameraUncheckedCreateWithoutMapAreaInput> | Prisma.CameraCreateWithoutMapAreaInput[] | Prisma.CameraUncheckedCreateWithoutMapAreaInput[]
+  connectOrCreate?: Prisma.CameraCreateOrConnectWithoutMapAreaInput | Prisma.CameraCreateOrConnectWithoutMapAreaInput[]
+  upsert?: Prisma.CameraUpsertWithWhereUniqueWithoutMapAreaInput | Prisma.CameraUpsertWithWhereUniqueWithoutMapAreaInput[]
+  createMany?: Prisma.CameraCreateManyMapAreaInputEnvelope
+  set?: Prisma.CameraWhereUniqueInput | Prisma.CameraWhereUniqueInput[]
+  disconnect?: Prisma.CameraWhereUniqueInput | Prisma.CameraWhereUniqueInput[]
+  delete?: Prisma.CameraWhereUniqueInput | Prisma.CameraWhereUniqueInput[]
+  connect?: Prisma.CameraWhereUniqueInput | Prisma.CameraWhereUniqueInput[]
+  update?: Prisma.CameraUpdateWithWhereUniqueWithoutMapAreaInput | Prisma.CameraUpdateWithWhereUniqueWithoutMapAreaInput[]
+  updateMany?: Prisma.CameraUpdateManyWithWhereWithoutMapAreaInput | Prisma.CameraUpdateManyWithWhereWithoutMapAreaInput[]
+  deleteMany?: Prisma.CameraScalarWhereInput | Prisma.CameraScalarWhereInput[]
+}
+
+export type CameraUncheckedUpdateManyWithoutMapAreaNestedInput = {
+  create?: Prisma.XOR<Prisma.CameraCreateWithoutMapAreaInput, Prisma.CameraUncheckedCreateWithoutMapAreaInput> | Prisma.CameraCreateWithoutMapAreaInput[] | Prisma.CameraUncheckedCreateWithoutMapAreaInput[]
+  connectOrCreate?: Prisma.CameraCreateOrConnectWithoutMapAreaInput | Prisma.CameraCreateOrConnectWithoutMapAreaInput[]
+  upsert?: Prisma.CameraUpsertWithWhereUniqueWithoutMapAreaInput | Prisma.CameraUpsertWithWhereUniqueWithoutMapAreaInput[]
+  createMany?: Prisma.CameraCreateManyMapAreaInputEnvelope
+  set?: Prisma.CameraWhereUniqueInput | Prisma.CameraWhereUniqueInput[]
+  disconnect?: Prisma.CameraWhereUniqueInput | Prisma.CameraWhereUniqueInput[]
+  delete?: Prisma.CameraWhereUniqueInput | Prisma.CameraWhereUniqueInput[]
+  connect?: Prisma.CameraWhereUniqueInput | Prisma.CameraWhereUniqueInput[]
+  update?: Prisma.CameraUpdateWithWhereUniqueWithoutMapAreaInput | Prisma.CameraUpdateWithWhereUniqueWithoutMapAreaInput[]
+  updateMany?: Prisma.CameraUpdateManyWithWhereWithoutMapAreaInput | Prisma.CameraUpdateManyWithWhereWithoutMapAreaInput[]
+  deleteMany?: Prisma.CameraScalarWhereInput | Prisma.CameraScalarWhereInput[]
+}
+
 export type CameraCreateWithoutRecordingsInput = {
   name: string
   location?: string | null
   host?: string | null
   streamPath?: string | null
+  mapX?: number | null
+  mapY?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  mapArea?: Prisma.MapAreaCreateNestedOneWithoutCamerasInput
   snapshots?: Prisma.SnapshotCreateNestedManyWithoutCameraInput
   events?: Prisma.EventCreateNestedManyWithoutCameraInput
 }
@@ -502,6 +643,9 @@ export type CameraUncheckedCreateWithoutRecordingsInput = {
   location?: string | null
   host?: string | null
   streamPath?: string | null
+  mapX?: number | null
+  mapY?: number | null
+  mapAreaId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   snapshots?: Prisma.SnapshotUncheckedCreateNestedManyWithoutCameraInput
@@ -529,8 +673,11 @@ export type CameraUpdateWithoutRecordingsInput = {
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   host?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   streamPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mapX?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mapY?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  mapArea?: Prisma.MapAreaUpdateOneWithoutCamerasNestedInput
   snapshots?: Prisma.SnapshotUpdateManyWithoutCameraNestedInput
   events?: Prisma.EventUpdateManyWithoutCameraNestedInput
 }
@@ -541,6 +688,9 @@ export type CameraUncheckedUpdateWithoutRecordingsInput = {
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   host?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   streamPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mapX?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mapY?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mapAreaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   snapshots?: Prisma.SnapshotUncheckedUpdateManyWithoutCameraNestedInput
@@ -552,8 +702,11 @@ export type CameraCreateWithoutSnapshotsInput = {
   location?: string | null
   host?: string | null
   streamPath?: string | null
+  mapX?: number | null
+  mapY?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  mapArea?: Prisma.MapAreaCreateNestedOneWithoutCamerasInput
   recordings?: Prisma.RecordingCreateNestedManyWithoutCameraInput
   events?: Prisma.EventCreateNestedManyWithoutCameraInput
 }
@@ -564,6 +717,9 @@ export type CameraUncheckedCreateWithoutSnapshotsInput = {
   location?: string | null
   host?: string | null
   streamPath?: string | null
+  mapX?: number | null
+  mapY?: number | null
+  mapAreaId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   recordings?: Prisma.RecordingUncheckedCreateNestedManyWithoutCameraInput
@@ -591,8 +747,11 @@ export type CameraUpdateWithoutSnapshotsInput = {
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   host?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   streamPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mapX?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mapY?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  mapArea?: Prisma.MapAreaUpdateOneWithoutCamerasNestedInput
   recordings?: Prisma.RecordingUpdateManyWithoutCameraNestedInput
   events?: Prisma.EventUpdateManyWithoutCameraNestedInput
 }
@@ -603,6 +762,9 @@ export type CameraUncheckedUpdateWithoutSnapshotsInput = {
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   host?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   streamPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mapX?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mapY?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mapAreaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   recordings?: Prisma.RecordingUncheckedUpdateManyWithoutCameraNestedInput
@@ -614,8 +776,11 @@ export type CameraCreateWithoutEventsInput = {
   location?: string | null
   host?: string | null
   streamPath?: string | null
+  mapX?: number | null
+  mapY?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  mapArea?: Prisma.MapAreaCreateNestedOneWithoutCamerasInput
   recordings?: Prisma.RecordingCreateNestedManyWithoutCameraInput
   snapshots?: Prisma.SnapshotCreateNestedManyWithoutCameraInput
 }
@@ -626,6 +791,9 @@ export type CameraUncheckedCreateWithoutEventsInput = {
   location?: string | null
   host?: string | null
   streamPath?: string | null
+  mapX?: number | null
+  mapY?: number | null
+  mapAreaId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   recordings?: Prisma.RecordingUncheckedCreateNestedManyWithoutCameraInput
@@ -653,8 +821,11 @@ export type CameraUpdateWithoutEventsInput = {
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   host?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   streamPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mapX?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mapY?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  mapArea?: Prisma.MapAreaUpdateOneWithoutCamerasNestedInput
   recordings?: Prisma.RecordingUpdateManyWithoutCameraNestedInput
   snapshots?: Prisma.SnapshotUpdateManyWithoutCameraNestedInput
 }
@@ -665,10 +836,137 @@ export type CameraUncheckedUpdateWithoutEventsInput = {
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   host?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   streamPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mapX?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mapY?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mapAreaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   recordings?: Prisma.RecordingUncheckedUpdateManyWithoutCameraNestedInput
   snapshots?: Prisma.SnapshotUncheckedUpdateManyWithoutCameraNestedInput
+}
+
+export type CameraCreateWithoutMapAreaInput = {
+  name: string
+  location?: string | null
+  host?: string | null
+  streamPath?: string | null
+  mapX?: number | null
+  mapY?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  recordings?: Prisma.RecordingCreateNestedManyWithoutCameraInput
+  snapshots?: Prisma.SnapshotCreateNestedManyWithoutCameraInput
+  events?: Prisma.EventCreateNestedManyWithoutCameraInput
+}
+
+export type CameraUncheckedCreateWithoutMapAreaInput = {
+  id?: number
+  name: string
+  location?: string | null
+  host?: string | null
+  streamPath?: string | null
+  mapX?: number | null
+  mapY?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  recordings?: Prisma.RecordingUncheckedCreateNestedManyWithoutCameraInput
+  snapshots?: Prisma.SnapshotUncheckedCreateNestedManyWithoutCameraInput
+  events?: Prisma.EventUncheckedCreateNestedManyWithoutCameraInput
+}
+
+export type CameraCreateOrConnectWithoutMapAreaInput = {
+  where: Prisma.CameraWhereUniqueInput
+  create: Prisma.XOR<Prisma.CameraCreateWithoutMapAreaInput, Prisma.CameraUncheckedCreateWithoutMapAreaInput>
+}
+
+export type CameraCreateManyMapAreaInputEnvelope = {
+  data: Prisma.CameraCreateManyMapAreaInput | Prisma.CameraCreateManyMapAreaInput[]
+  skipDuplicates?: boolean
+}
+
+export type CameraUpsertWithWhereUniqueWithoutMapAreaInput = {
+  where: Prisma.CameraWhereUniqueInput
+  update: Prisma.XOR<Prisma.CameraUpdateWithoutMapAreaInput, Prisma.CameraUncheckedUpdateWithoutMapAreaInput>
+  create: Prisma.XOR<Prisma.CameraCreateWithoutMapAreaInput, Prisma.CameraUncheckedCreateWithoutMapAreaInput>
+}
+
+export type CameraUpdateWithWhereUniqueWithoutMapAreaInput = {
+  where: Prisma.CameraWhereUniqueInput
+  data: Prisma.XOR<Prisma.CameraUpdateWithoutMapAreaInput, Prisma.CameraUncheckedUpdateWithoutMapAreaInput>
+}
+
+export type CameraUpdateManyWithWhereWithoutMapAreaInput = {
+  where: Prisma.CameraScalarWhereInput
+  data: Prisma.XOR<Prisma.CameraUpdateManyMutationInput, Prisma.CameraUncheckedUpdateManyWithoutMapAreaInput>
+}
+
+export type CameraScalarWhereInput = {
+  AND?: Prisma.CameraScalarWhereInput | Prisma.CameraScalarWhereInput[]
+  OR?: Prisma.CameraScalarWhereInput[]
+  NOT?: Prisma.CameraScalarWhereInput | Prisma.CameraScalarWhereInput[]
+  id?: Prisma.IntFilter<"Camera"> | number
+  name?: Prisma.StringFilter<"Camera"> | string
+  location?: Prisma.StringNullableFilter<"Camera"> | string | null
+  host?: Prisma.StringNullableFilter<"Camera"> | string | null
+  streamPath?: Prisma.StringNullableFilter<"Camera"> | string | null
+  mapX?: Prisma.FloatNullableFilter<"Camera"> | number | null
+  mapY?: Prisma.FloatNullableFilter<"Camera"> | number | null
+  mapAreaId?: Prisma.IntNullableFilter<"Camera"> | number | null
+  createdAt?: Prisma.DateTimeFilter<"Camera"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Camera"> | Date | string
+}
+
+export type CameraCreateManyMapAreaInput = {
+  id?: number
+  name: string
+  location?: string | null
+  host?: string | null
+  streamPath?: string | null
+  mapX?: number | null
+  mapY?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type CameraUpdateWithoutMapAreaInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  host?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  streamPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mapX?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mapY?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  recordings?: Prisma.RecordingUpdateManyWithoutCameraNestedInput
+  snapshots?: Prisma.SnapshotUpdateManyWithoutCameraNestedInput
+  events?: Prisma.EventUpdateManyWithoutCameraNestedInput
+}
+
+export type CameraUncheckedUpdateWithoutMapAreaInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  host?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  streamPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mapX?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mapY?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  recordings?: Prisma.RecordingUncheckedUpdateManyWithoutCameraNestedInput
+  snapshots?: Prisma.SnapshotUncheckedUpdateManyWithoutCameraNestedInput
+  events?: Prisma.EventUncheckedUpdateManyWithoutCameraNestedInput
+}
+
+export type CameraUncheckedUpdateManyWithoutMapAreaInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  host?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  streamPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mapX?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  mapY?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -726,8 +1024,12 @@ export type CameraSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   location?: boolean
   host?: boolean
   streamPath?: boolean
+  mapX?: boolean
+  mapY?: boolean
+  mapAreaId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  mapArea?: boolean | Prisma.Camera$mapAreaArgs<ExtArgs>
   recordings?: boolean | Prisma.Camera$recordingsArgs<ExtArgs>
   snapshots?: boolean | Prisma.Camera$snapshotsArgs<ExtArgs>
   events?: boolean | Prisma.Camera$eventsArgs<ExtArgs>
@@ -740,8 +1042,12 @@ export type CameraSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   location?: boolean
   host?: boolean
   streamPath?: boolean
+  mapX?: boolean
+  mapY?: boolean
+  mapAreaId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  mapArea?: boolean | Prisma.Camera$mapAreaArgs<ExtArgs>
 }, ExtArgs["result"]["camera"]>
 
 export type CameraSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -750,8 +1056,12 @@ export type CameraSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   location?: boolean
   host?: boolean
   streamPath?: boolean
+  mapX?: boolean
+  mapY?: boolean
+  mapAreaId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  mapArea?: boolean | Prisma.Camera$mapAreaArgs<ExtArgs>
 }, ExtArgs["result"]["camera"]>
 
 export type CameraSelectScalar = {
@@ -760,23 +1070,32 @@ export type CameraSelectScalar = {
   location?: boolean
   host?: boolean
   streamPath?: boolean
+  mapX?: boolean
+  mapY?: boolean
+  mapAreaId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type CameraOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "location" | "host" | "streamPath" | "createdAt" | "updatedAt", ExtArgs["result"]["camera"]>
+export type CameraOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "location" | "host" | "streamPath" | "mapX" | "mapY" | "mapAreaId" | "createdAt" | "updatedAt", ExtArgs["result"]["camera"]>
 export type CameraInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  mapArea?: boolean | Prisma.Camera$mapAreaArgs<ExtArgs>
   recordings?: boolean | Prisma.Camera$recordingsArgs<ExtArgs>
   snapshots?: boolean | Prisma.Camera$snapshotsArgs<ExtArgs>
   events?: boolean | Prisma.Camera$eventsArgs<ExtArgs>
   _count?: boolean | Prisma.CameraCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type CameraIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
-export type CameraIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type CameraIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  mapArea?: boolean | Prisma.Camera$mapAreaArgs<ExtArgs>
+}
+export type CameraIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  mapArea?: boolean | Prisma.Camera$mapAreaArgs<ExtArgs>
+}
 
 export type $CameraPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Camera"
   objects: {
+    mapArea: Prisma.$MapAreaPayload<ExtArgs> | null
     recordings: Prisma.$RecordingPayload<ExtArgs>[]
     snapshots: Prisma.$SnapshotPayload<ExtArgs>[]
     events: Prisma.$EventPayload<ExtArgs>[]
@@ -787,6 +1106,9 @@ export type $CameraPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     location: string | null
     host: string | null
     streamPath: string | null
+    mapX: number | null
+    mapY: number | null
+    mapAreaId: number | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["camera"]>
@@ -1183,6 +1505,7 @@ readonly fields: CameraFieldRefs;
  */
 export interface Prisma__CameraClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  mapArea<T extends Prisma.Camera$mapAreaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Camera$mapAreaArgs<ExtArgs>>): Prisma.Prisma__MapAreaClient<runtime.Types.Result.GetResult<Prisma.$MapAreaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   recordings<T extends Prisma.Camera$recordingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Camera$recordingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RecordingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   snapshots<T extends Prisma.Camera$snapshotsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Camera$snapshotsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SnapshotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   events<T extends Prisma.Camera$eventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Camera$eventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -1220,6 +1543,9 @@ export interface CameraFieldRefs {
   readonly location: Prisma.FieldRef<"Camera", 'String'>
   readonly host: Prisma.FieldRef<"Camera", 'String'>
   readonly streamPath: Prisma.FieldRef<"Camera", 'String'>
+  readonly mapX: Prisma.FieldRef<"Camera", 'Float'>
+  readonly mapY: Prisma.FieldRef<"Camera", 'Float'>
+  readonly mapAreaId: Prisma.FieldRef<"Camera", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Camera", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Camera", 'DateTime'>
 }
@@ -1476,6 +1802,10 @@ export type CameraCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensio
    */
   data: Prisma.CameraCreateManyInput | Prisma.CameraCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CameraIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1546,6 +1876,10 @@ export type CameraUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensio
    * Limit how many Cameras to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CameraIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1612,6 +1946,25 @@ export type CameraDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Limit how many Cameras to delete.
    */
   limit?: number
+}
+
+/**
+ * Camera.mapArea
+ */
+export type Camera$mapAreaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MapArea
+   */
+  select?: Prisma.MapAreaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MapArea
+   */
+  omit?: Prisma.MapAreaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MapAreaInclude<ExtArgs> | null
+  where?: Prisma.MapAreaWhereInput
 }
 
 /**

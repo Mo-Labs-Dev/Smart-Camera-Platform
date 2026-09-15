@@ -1,4 +1,7 @@
 import {
+ requirePermission,
+} from "@/lib/authorization";
+import {
  NextResponse,
 } from "next/server";
 import fs from "node:fs/promises";
@@ -24,6 +27,13 @@ export async function POST(
  _request: Request,
  context: Context
 ) {
+  const access =
+ await requirePermission(
+   "recording:operate"
+ );
+if (!access.ok) {
+ return access.response;
+}
  try {
    const {
      id: idValue,
@@ -207,7 +217,7 @@ export async function POST(
     */
    const status =
      fileSize !== null &&
-     fileSize > 0n
+     fileSize > BigInt (0)
        ? "completed"
        : "failed";
    const updatedRecording =

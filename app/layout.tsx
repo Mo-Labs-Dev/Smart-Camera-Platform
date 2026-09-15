@@ -3,7 +3,8 @@ import {
  Geist,
  Geist_Mono,
 } from "next/font/google";
-import Sidebar from "@/components/dashboard/Sidebar";
+import AuthenticatedShell from "@/components/auth/AuthenticatedShell";
+import AuthProvider from "@/components/auth/AuthProvider";
 import "./globals.css";
 const geistSans = Geist({
  variable: "--font-geist-sans",
@@ -29,10 +30,11 @@ export default function RootLayout({
      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
 >
 <body className="min-h-screen bg-slate-50 text-slate-900">
-<Sidebar />
-<main className="min-h-screen pl-64">
-         {children}
-</main>
+<AuthProvider>
+<AuthenticatedShell>
+           {children}
+</AuthenticatedShell>
+</AuthProvider>
 </body>
 </html>
  );

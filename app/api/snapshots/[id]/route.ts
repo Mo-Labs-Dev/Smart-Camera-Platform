@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import fs from "node:fs/promises";
 import { prisma } from "@/lib/prisma";
+import { requirePermission } from "@/lib/authorization";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 type Context = {
@@ -8,19 +9,29 @@ type Context = {
    id: string;
  }>;
 };
+/*
+* DELETE /api/snapshots/:id
+*
+* ADMIN only.
+*/
 export async function DELETE(
  _request: Request,
  context: Context
 ) {
+ const access =
+   await requirePermission(
+     "snapshot:delete"
+   );
+ if (!access.ok) {
+   return access.response;
+ }
  try {
    const { id: idValue } =
      await context.params;
    const snapshotId =
      Number(idValue);
    if (
-     !Number.isInteger(
-       snapshotId
-     ) ||
+     !Number.isInteger(snapshotId) ||
      snapshotId <= 0
    ) {
      return NextResponse.json(
@@ -55,9 +66,10 @@ export async function DELETE(
    /*
     * Delete image file.
     *
-    * ENOENT means the file is already
-    * missing, so we can still delete
-    * the database record.
+    * ENOENT means the file is
+    * already missing, so the
+    * database record can still
+    * be removed.
     */
    if (snapshot.filePath) {
      try {

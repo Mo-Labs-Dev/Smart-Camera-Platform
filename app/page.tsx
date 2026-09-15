@@ -1,14 +1,11 @@
 import DashboardClient from "@/components/dashboard/DashboardClient";
 import { prisma } from "@/lib/prisma";
-export const dynamic =
- "force-dynamic";
+export const dynamic = "force-dynamic";
 export default async function Home() {
  const now = new Date();
- const last24Hours =
-   new Date(
-     now.getTime() -
-       24 * 60 * 60 * 1000
-   );
+ const last24Hours = new Date(
+   now.getTime() - 24 * 60 * 60 * 1000
+ );
  const [
    cameras,
    events24h,
@@ -35,8 +32,7 @@ export default async function Home() {
        camera: true,
      },
      orderBy: {
-       createdAt:
-         "desc",
+       createdAt: "desc",
      },
      take: 5,
    }),
@@ -44,41 +40,31 @@ export default async function Home() {
  return (
 <div className="min-h-screen bg-slate-50 px-6 py-6 lg:px-8 lg:py-8">
 <DashboardClient
-       cameras={cameras.map(
-         (camera) => ({
-           id: camera.id,
-           name: camera.name,
-           location:
-             camera.location ??
-             "Unknown location",
-           host:
-             camera.host,
-           streamPath:
-             camera.streamPath,
-         })
-       )}
-       events24h={
-         events24h
-       }
-       totalRecordings={
+       cameras={cameras.map((camera) => ({
+         id: camera.id,
+         name: camera.name,
+         location:
+           camera.location ??
+           "Unknown location",
+         host: camera.host,
+         streamPath: camera.streamPath,
+       }))}
+       initialEvents24h={events24h}
+       initialTotalRecordings={
          totalRecordings
        }
-       totalSnapshots={
+       initialTotalSnapshots={
          totalSnapshots
        }
        recentEvents={recentEvents.map(
          (event) => ({
            id: event.id,
-           type:
-             event.type,
-           message:
-             event.message,
+           type: event.type,
+           message: event.message,
            createdAt:
              event.createdAt.toISOString(),
            cameraName:
-             event.camera
-               ?.name ??
-             null,
+             event.camera?.name ?? null,
          })
        )}
      />

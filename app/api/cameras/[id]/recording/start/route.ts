@@ -10,6 +10,9 @@ import {
  prisma,
 } from "@/lib/prisma";
 import {
+ requirePermission,
+} from "@/lib/authorization";
+import {
  ensureRecordingDirectories,
  getRecordingsDirectory,
  isProcessRunning,
@@ -42,6 +45,13 @@ export async function POST(
  _request: Request,
  context: Context
 ) {
+    const access =
+ await requirePermission(
+   "recording:operate"
+ );
+if (!access.ok) {
+ return access.response;
+}
  try {
    const {
      id: idValue,

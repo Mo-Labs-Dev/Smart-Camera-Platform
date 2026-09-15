@@ -8,8 +8,11 @@
  *
  * 🟢 You can import this file directly.
  */
+export type * from './models/User'
 export type * from './models/Camera'
 export type * from './models/Recording'
 export type * from './models/Snapshot'
 export type * from './models/Event'
+export type * from './models/SystemSettings'
+export type * from './models/MapArea'
 export type * from './commonInputTypes'

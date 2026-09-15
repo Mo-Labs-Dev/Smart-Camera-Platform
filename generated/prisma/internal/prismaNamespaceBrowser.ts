@@ -51,10 +51,13 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
+  User: 'User',
   Camera: 'Camera',
   Recording: 'Recording',
   Snapshot: 'Snapshot',
-  Event: 'Event'
+  Event: 'Event',
+  SystemSettings: 'SystemSettings',
+  MapArea: 'MapArea'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -73,12 +76,30 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+export const UserScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  passwordHash: 'passwordHash',
+  role: 'role',
+  active: 'active',
+  lastLoginAt: 'lastLoginAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
 export const CameraScalarFieldEnum = {
   id: 'id',
   name: 'name',
   location: 'location',
   host: 'host',
   streamPath: 'streamPath',
+  mapX: 'mapX',
+  mapY: 'mapY',
+  mapAreaId: 'mapAreaId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -123,6 +144,38 @@ export const EventScalarFieldEnum = {
 } as const
 
 export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
+
+
+export const SystemSettingsScalarFieldEnum = {
+  id: 'id',
+  platformName: 'platformName',
+  patrolIntervalSec: 'patrolIntervalSec',
+  cameraStatusRefreshSec: 'cameraStatusRefreshSec',
+  systemRefreshSec: 'systemRefreshSec',
+  recordingRetentionDays: 'recordingRetentionDays',
+  snapshotRetentionDays: 'snapshotRetentionDays',
+  defaultStreamQuality: 'defaultStreamQuality',
+  autoRecord: 'autoRecord',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SystemSettingsScalarFieldEnum = (typeof SystemSettingsScalarFieldEnum)[keyof typeof SystemSettingsScalarFieldEnum]
+
+
+export const MapAreaScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  type: 'type',
+  mapX: 'mapX',
+  mapY: 'mapY',
+  width: 'width',
+  height: 'height',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MapAreaScalarFieldEnum = (typeof MapAreaScalarFieldEnum)[keyof typeof MapAreaScalarFieldEnum]
 
 
 export const SortOrder = {

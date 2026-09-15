@@ -2,11 +2,25 @@ import { NextResponse } from "next/server";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { prisma } from "@/lib/prisma";
+import { requirePermission } from "@/lib/authorization";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+/*
+* POST /api/snapshots
+*
+* ADMIN + OPERATOR can create snapshots.
+* VIEWER is read-only.
+*/
 export async function POST(
  request: Request
 ) {
+ const access =
+   await requirePermission(
+     "snapshot:create"
+   );
+ if (!access.ok) {
+   return access.response;
+ }
  try {
    const formData =
      await request.formData();
@@ -17,9 +31,7 @@ export async function POST(
    const cameraId =
      Number(cameraIdValue);
    if (
-     !Number.isInteger(
-       cameraId
-     ) ||
+     !Number.isInteger(cameraId) ||
      cameraId <= 0
    ) {
      return NextResponse.json(
@@ -64,8 +76,7 @@ export async function POST(
      );
    }
    /*
-    * Physical storage directory:
-    *
+    * Physical storage:
     * project-root/snapshots
     */
    const snapshotsDirectory =
@@ -89,8 +100,7 @@ export async function POST(
        filename
      );
    /*
-    * Store a RELATIVE path in PostgreSQL.
-    * This works even if the project moves.
+    * Store relative path in PostgreSQL.
     */
    const storedFilePath =
      path.join(
@@ -100,12 +110,8 @@ export async function POST(
    const arrayBuffer =
      await image.arrayBuffer();
    const buffer =
-     Buffer.from(
-       arrayBuffer
-     );
-   if (
-     buffer.length === 0
-   ) {
+     Buffer.from(arrayBuffer);
+   if (buffer.length === 0) {
      return NextResponse.json(
        {
          ok: false,
@@ -121,19 +127,14 @@ export async function POST(
      absoluteFilePath,
      buffer
    );
-   /*
-    * Confirm file was actually saved.
-    */
    const stats =
      await fs.stat(
        absoluteFilePath
      );
-   if (
-     stats.size === 0
-   ) {
-     await fs.unlink(
-       absoluteFilePath
-     ).catch(() => {});
+   if (stats.size === 0) {
+     await fs
+       .unlink(absoluteFilePath)
+       .catch(() => {});
      return NextResponse.json(
        {
          ok: false,
@@ -161,8 +162,7 @@ export async function POST(
      {
        ok: true,
        snapshot: {
-         id:
-snapshot.id,
+         id: snapshot.id,
          cameraId:
            snapshot.cameraId,
          filename:
@@ -175,8 +175,7 @@ snapshot.camera.id,
            name:
              snapshot.camera.name,
            location:
-             snapshot.camera
-               .location,
+             snapshot.camera.location,
          },
        },
      },
@@ -201,6 +200,11 @@ snapshot.camera.id,
    );
  }
 }
+/*
+* GET /api/snapshots
+*
+* All authenticated users can view snapshots.
+*/
 export async function GET() {
  try {
    const snapshots =
@@ -215,8 +219,7 @@ export async function GET() {
    return NextResponse.json(
      snapshots.map(
        (snapshot) => ({
-         id:
-snapshot.id,
+         id: snapshot.id,
          cameraId:
            snapshot.cameraId,
          filename:
@@ -229,8 +232,7 @@ snapshot.camera.id,
            name:
              snapshot.camera.name,
            location:
-             snapshot.camera
-               .location,
+             snapshot.camera.location,
          },
        })
      )

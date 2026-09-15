@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Camera" ADD COLUMN     "mapX" DOUBLE PRECISION,
+ADD COLUMN     "mapY" DOUBLE PRECISION;

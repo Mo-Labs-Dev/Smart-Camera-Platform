@@ -7,12 +7,34 @@ datasource db {
   provider = "postgresql"
 }
 
+enum UserRole {
+  ADMIN
+  OPERATOR
+  VIEWER
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         UserRole  @default(VIEWER)
+  active       Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
 model Camera {
   id         Int         @id @default(autoincrement())
   name       String
   location   String?
   host       String?
   streamPath String?
+  mapX       Float?
+  mapY       Float?
+  mapAreaId  Int?
+  mapArea    MapArea?    @relation(fields: [mapAreaId], references: [id], onDelete: SetNull)
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   recordings Recording[]
@@ -51,4 +73,31 @@ model Event {
   message   String
   createdAt DateTime @default(now())
   camera    Camera?  @relation(fields: [cameraId], references: [id], onDelete: SetNull)
+}
+
+model SystemSettings {
+  id                     Int      @id @default(1)
+  platformName           String   @default("Smart Camera Platform")
+  patrolIntervalSec      Int      @default(10)
+  cameraStatusRefreshSec Int      @default(10)
+  systemRefreshSec       Int      @default(5)
+  recordingRetentionDays Int      @default(30)
+  snapshotRetentionDays  Int      @default(30)
+  defaultStreamQuality   String   @default("main")
+  autoRecord             Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model MapArea {
+  id        Int      @id @default(autoincrement())
+  name      String
+  type      String   @default("room")
+  mapX      Float
+  mapY      Float
+  width     Float
+  height    Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cameras   Camera[]
 }
